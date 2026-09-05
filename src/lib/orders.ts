@@ -5,25 +5,25 @@ export class OrderError extends Error {}
 export type CreateOrderItemInput = { productId: string; size?: string | null; qty: number };
 
 export type CreateOrderMeta = {
-  sellerName: string;
-  sellerPhone: string;
+  buyerName: string;
+  buyerPhone: string;
   managerName: string;
 };
 
 /**
  * 주문을 생성하고 재고를 즉시 차감한다.
  * 사이즈가 있는 상품이면 해당 사이즈의 재고를, 없으면 상품 전체 재고를 차감한다.
- * 판매자 이름/전화번호, 재고관리 담당자 이름은 매번 정확히 입력되어야 한다.
+ * 구매자 이름/전화번호, 재고관리 담당자 이름은 매번 정확히 입력되어야 한다.
  */
 export async function createOrder(items: CreateOrderItemInput[], meta: CreateOrderMeta): Promise<Order> {
   if (!items || items.length === 0) {
     throw new OrderError("상품을 선택해주세요.");
   }
-  const sellerName = meta?.sellerName?.trim();
-  const sellerPhone = meta?.sellerPhone?.trim();
+  const buyerName = meta?.buyerName?.trim();
+  const buyerPhone = meta?.buyerPhone?.trim();
   const managerName = meta?.managerName?.trim();
-  if (!sellerName) throw new OrderError("판매자 이름을 입력해주세요.");
-  if (!sellerPhone) throw new OrderError("판매자 전화번호를 입력해주세요.");
+  if (!buyerName) throw new OrderError("구매자 이름을 입력해주세요.");
+  if (!buyerPhone) throw new OrderError("구매자 전화번호를 입력해주세요.");
   if (!managerName) throw new OrderError("재고관리 담당자 이름을 입력해주세요.");
 
   return withStore((store) => {
@@ -96,8 +96,8 @@ export async function createOrder(items: CreateOrderItemInput[], meta: CreateOrd
       items: orderItems,
       total,
       totalCost,
-      sellerName,
-      sellerPhone,
+      buyerName,
+      buyerPhone,
       managerName,
     };
     store.orders.push(order);

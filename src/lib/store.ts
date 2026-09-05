@@ -43,8 +43,8 @@ export type Order = {
   total: number;
   totalCost: number;
   cancelledAt?: string;
-  sellerName: string;
-  sellerPhone: string;
+  buyerName: string;
+  buyerPhone: string;
   managerName: string;
 };
 
@@ -122,7 +122,7 @@ const DEFAULT_STORE: Store = {
     },
     {
       id: "p3",
-      name: "애한제티-면",
+      name: "애한제티1-면",
       category: "new-materials",
       price: 20000,
       cost: 8000,
@@ -136,7 +136,35 @@ const DEFAULT_STORE: Store = {
     },
     {
       id: "p4",
-      name: "애한제티-기능성",
+      name: "애한제티1-기능성",
+      category: "international-hall",
+      price: 22000,
+      cost: 8000,
+      hasSizes: true,
+      sizes: sizeStockSet(20),
+      initialStock: 0,
+      currentStock: 0,
+      lowStockThreshold: 5,
+      imageUrl: "/goods/tshirt-1.png",
+      active: true,
+    },
+    {
+      id: "p9",
+      name: "애한제티2-면",
+      category: "new-materials",
+      price: 20000,
+      cost: 8000,
+      hasSizes: true,
+      sizes: sizeStockSet(20),
+      initialStock: 0,
+      currentStock: 0,
+      lowStockThreshold: 5,
+      imageUrl: "/goods/tshirt-2.png",
+      active: true,
+    },
+    {
+      id: "p10",
+      name: "애한제티2-기능성",
       category: "international-hall",
       price: 22000,
       cost: 8000,
@@ -150,10 +178,10 @@ const DEFAULT_STORE: Store = {
     },
     {
       id: "p5",
-      name: "티셔츠 3번",
+      name: "애한제티3-면",
       category: "new-materials",
-      price: 0,
-      cost: 0,
+      price: 20000,
+      cost: 8000,
       hasSizes: true,
       sizes: sizeStockSet(20),
       initialStock: 0,
@@ -236,9 +264,9 @@ function normalizeStore(store: Store): Store {
       product.sizes = [];
     }
   }
-  for (const order of store.orders as (Order & Partial<Order>)[]) {
-    if (typeof order.sellerName !== "string") order.sellerName = "";
-    if (typeof order.sellerPhone !== "string") order.sellerPhone = "";
+  for (const order of store.orders as (Order & Partial<Order> & { sellerName?: string; sellerPhone?: string })[]) {
+    if (typeof order.buyerName !== "string") order.buyerName = order.sellerName ?? "";
+    if (typeof order.buyerPhone !== "string") order.buyerPhone = order.sellerPhone ?? "";
     if (typeof order.managerName !== "string") order.managerName = "";
   }
   return store;

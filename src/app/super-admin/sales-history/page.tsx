@@ -12,8 +12,8 @@ type Order = {
   total: number;
   totalCost: number;
   cancelledAt?: string;
-  sellerName: string;
-  sellerPhone: string;
+  buyerName: string;
+  buyerPhone: string;
   managerName: string;
 };
 
@@ -74,8 +74,8 @@ export default function SalesHistoryPage() {
       "주문번호",
       "판매시간",
       "상태",
-      "판매자",
-      "판매자 전화번호",
+      "구매자",
+      "구매자 전화번호",
       "재고관리 담당자",
       "상품",
       "사이즈",
@@ -91,8 +91,8 @@ export default function SalesHistoryPage() {
           String(o.orderNumber),
           o.createdAt,
           o.status === "completed" ? "판매완료" : "취소",
-          o.sellerName,
-          o.sellerPhone,
+          o.buyerName,
+          o.buyerPhone,
           o.managerName,
           item.name,
           item.size ?? "",
@@ -246,8 +246,8 @@ export default function SalesHistoryPage() {
                 {isOpen && (
                   <div className="border-t border-neutral-100 px-4 py-3">
                     <p className="mb-2 text-sm text-neutral-500">
-                      판매자: <span className="text-neutral-800">{o.sellerName || "-"}</span> (
-                      {o.sellerPhone || "-"}) · 재고관리 담당자:{" "}
+                      구매자: <span className="text-neutral-800">{o.buyerName || "-"}</span> (
+                      {o.buyerPhone || "-"}) · 재고관리 담당자:{" "}
                       <span className="text-neutral-800">{o.managerName || "-"}</span>
                     </p>
                     <table className="w-full text-sm">

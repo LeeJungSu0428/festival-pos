@@ -32,8 +32,8 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const items = Array.isArray(body?.items) ? body.items : [];
     const order = await createOrder(items, {
-      sellerName: body?.sellerName ?? "",
-      sellerPhone: body?.sellerPhone ?? "",
+      buyerName: body?.buyerName ?? "",
+      buyerPhone: body?.buyerPhone ?? "",
       managerName: body?.managerName ?? "",
     });
     return NextResponse.json(order, { status: 201 });

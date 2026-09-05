@@ -115,6 +115,7 @@ export default function GoodsViewerView({
         <div>
           <p className="text-xs tracking-[0.2em] text-[#5B7FA6]">애국한양응원제 : 오름</p>
           <h1 className="text-lg font-bold text-[#26415F]">{title}</h1>
+          <p className="text-xs text-[#9AAEC4]">신소재·국제관 전체 굿즈 목록입니다.</p>
         </div>
         <Link href="/hub" className="text-sm text-[#5B6B82] hover:text-[#26415F]">
           ← 허브로
