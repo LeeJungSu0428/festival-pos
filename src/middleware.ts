@@ -71,6 +71,11 @@ export async function middleware(req: NextRequest) {
     if (role !== "super") return deny(403, "슈퍼관리자만 가능합니다.");
   }
 
+  // ---- API: 관리자 도구(초기화 등) ----
+  if (pathname.startsWith("/api/admin")) {
+    if (role !== "super") return deny(403, "슈퍼관리자만 가능합니다.");
+  }
+
   return NextResponse.next();
 }
 
@@ -85,5 +90,6 @@ export const config = {
     "/api/orders/:path*",
     "/api/stats/:path*",
     "/api/goods-viewer/:path*",
+    "/api/admin/:path*",
   ],
 };

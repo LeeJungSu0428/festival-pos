@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 
 type Category = "new-materials" | "international-hall";
 type ProductSize = { label: string; initialStock: number; currentStock: number };
@@ -40,10 +41,12 @@ const emptyForm = {
 };
 
 export default function ProductsPage() {
+  const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [form, setForm] = useState(emptyForm);
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   async function load() {
     const res = await fetch("/api/products");
@@ -103,13 +106,37 @@ export default function ProductsPage() {
     load();
   }
 
+  async function resetAll() {
+    if (
+      !confirm(
+        "정말 초기화할까요?\n\n상품/재고/판매기록/굿즈뷰어 주문 기록이 전부 지워지고 기본 상품 목록으로 다시 채워집니다.\n실제 판매가 시작된 뒤에는 절대 누르지 마세요."
+      )
+    ) {
+      return;
+    }
+    setResetting(true);
+    await fetch("/api/admin/reset", { method: "POST" });
+    setResetting(false);
+    router.refresh();
+    load();
+  }
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-neutral-900">상품 관리</h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          새 상품을 추가하거나 기존 상품을 비활성화·삭제할 수 있습니다.
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-neutral-900">상품 관리</h1>
+          <p className="mt-1 text-sm text-neutral-500">
+            새 상품을 추가하거나 기존 상품을 비활성화·삭제할 수 있습니다.
+          </p>
+        </div>
+        <button
+          onClick={resetAll}
+          disabled={resetting}
+          className="shrink-0 rounded border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+        >
+          {resetting ? "초기화 중…" : "테스트 데이터 초기화"}
+        </button>
       </div>
 
       <form

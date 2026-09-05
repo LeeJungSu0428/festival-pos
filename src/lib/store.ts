@@ -332,6 +332,15 @@ export function withStore<T>(fn: (store: Store) => T | Promise<T>): Promise<T> {
   return run;
 }
 
+/** 저장된 데이터를 전부 지운다. 다음 조회 때 DEFAULT_STORE로 다시 초기화된다. */
+export async function resetStore(): Promise<void> {
+  if (redis) {
+    await redis.del(REDIS_STORE_KEY);
+    return;
+  }
+  await fs.rm(DATA_FILE, { force: true });
+}
+
 /** 읽기 전용 조회. */
 export async function readOnly<T>(fn: (store: Store) => T): Promise<T> {
   const store = redis ? await readStoreFromRedis() : await readStoreFromDisk();
