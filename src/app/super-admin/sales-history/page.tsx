@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 
-type OrderItem = { productId: string; name: string; qty: number; price: number; cost: number };
+type OrderItem = { productId: string; name: string; size: string | null; qty: number; price: number; cost: number };
 type Order = {
   id: string;
   orderNumber: number;
@@ -67,7 +67,7 @@ export default function SalesHistoryPage() {
   }
 
   function downloadCsv() {
-    const header = ["주문번호", "판매시간", "상태", "상품", "수량", "판매가", "원가", "소계"];
+    const header = ["주문번호", "판매시간", "상태", "상품", "사이즈", "수량", "판매가", "원가", "소계"];
     const rows: string[][] = [];
     for (const o of orders) {
       for (const item of o.items) {
@@ -76,6 +76,7 @@ export default function SalesHistoryPage() {
           o.createdAt,
           o.status === "completed" ? "판매완료" : "취소",
           item.name,
+          item.size ?? "",
           String(item.qty),
           String(item.price),
           String(item.cost),
@@ -238,7 +239,10 @@ export default function SalesHistoryPage() {
                       <tbody>
                         {o.items.map((item, i) => (
                           <tr key={i} className="border-t border-neutral-50">
-                            <td className="py-1">{item.name}</td>
+                            <td className="py-1">
+                              {item.name}
+                              {item.size && <span className="text-[#5B6B82]"> ({item.size})</span>}
+                            </td>
                             <td className="py-1 text-right">{item.qty}</td>
                             <td className="py-1 text-right">₩{item.price.toLocaleString("ko-KR")}</td>
                             <td className="py-1 text-right">₩{item.cost.toLocaleString("ko-KR")}</td>

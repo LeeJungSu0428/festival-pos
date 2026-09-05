@@ -1,4 +1,4 @@
-import { withStore, readOnly, type Product, type ProductCategory } from "./store";
+import { withStore, readOnly, type Product, type ProductCategory, type ProductSize } from "./store";
 
 export class ProductError extends Error {}
 
@@ -7,6 +7,7 @@ function genId(): string {
 }
 
 const VALID_CATEGORIES: ProductCategory[] = ["new-materials", "international-hall"];
+const DEFAULT_SIZE_LABELS = ["S", "M", "L", "XL", "2XL", "3XL"];
 
 export async function listProducts(): Promise<Product[]> {
   return readOnly((s) => s.products);
@@ -16,12 +17,30 @@ export async function listProductsByCategory(category: ProductCategory): Promise
   return readOnly((s) => s.products.filter((p) => p.category === category));
 }
 
+function normalizeSizesInput(input: unknown): ProductSize[] {
+  if (!Array.isArray(input)) {
+    return DEFAULT_SIZE_LABELS.map((label) => ({ label, initialStock: 0, currentStock: 0 }));
+  }
+  return input.map((raw) => {
+    const label = typeof raw?.label === "string" ? raw.label.trim() : "";
+    const initialStock = Number(raw?.initialStock ?? raw?.currentStock ?? 0);
+    const currentStock = Number(raw?.currentStock ?? raw?.initialStock ?? 0);
+    if (!label) throw new ProductError("사이즈 이름을 입력해주세요.");
+    if (!Number.isFinite(initialStock) || initialStock < 0 || !Number.isFinite(currentStock) || currentStock < 0) {
+      throw new ProductError("사이즈별 재고는 0 이상의 숫자여야 합니다.");
+    }
+    return { label, initialStock, currentStock };
+  });
+}
+
 export type CreateProductInput = {
   name: string;
   category: ProductCategory;
   price: number;
   cost: number;
-  initialStock: number;
+  hasSizes?: boolean;
+  sizes?: { label: string; initialStock: number }[];
+  initialStock?: number;
   lowStockThreshold?: number;
   imageUrl?: string | null;
 };
@@ -30,15 +49,25 @@ export async function createProduct(input: CreateProductInput): Promise<Product>
   const name = typeof input.name === "string" ? input.name.trim() : "";
   const price = Number(input.price);
   const cost = Number(input.cost);
-  const initialStock = Number(input.initialStock);
   const category = input.category;
+  const hasSizes = Boolean(input.hasSizes);
 
   if (!name) throw new ProductError("상품명을 입력해주세요.");
   if (!VALID_CATEGORIES.includes(category)) throw new ProductError("담당 사이트를 선택해주세요.");
   if (!Number.isFinite(price) || price < 0) throw new ProductError("판매가는 0 이상의 숫자여야 합니다.");
   if (!Number.isFinite(cost) || cost < 0) throw new ProductError("원가는 0 이상의 숫자여야 합니다.");
-  if (!Number.isFinite(initialStock) || initialStock < 0) {
-    throw new ProductError("초기 재고는 0 이상의 숫자여야 합니다.");
+
+  let sizes: ProductSize[] = [];
+  let initialStock = 0;
+  if (hasSizes) {
+    sizes = normalizeSizesInput(
+      input.sizes?.map((s) => ({ label: s.label, initialStock: s.initialStock, currentStock: s.initialStock }))
+    );
+  } else {
+    initialStock = Number(input.initialStock);
+    if (!Number.isFinite(initialStock) || initialStock < 0) {
+      throw new ProductError("초기 재고는 0 이상의 숫자여야 합니다.");
+    }
   }
 
   return withStore((store) => {
@@ -48,8 +77,10 @@ export async function createProduct(input: CreateProductInput): Promise<Product>
       category,
       price,
       cost,
-      initialStock,
-      currentStock: initialStock,
+      hasSizes,
+      sizes,
+      initialStock: hasSizes ? 0 : initialStock,
+      currentStock: hasSizes ? 0 : initialStock,
       lowStockThreshold: Number.isFinite(Number(input.lowStockThreshold))
         ? Number(input.lowStockThreshold)
         : 10,
@@ -86,6 +117,17 @@ export async function updateProduct(id: string, patch: UpdateProductInput): Prom
       const cost = Number(patch.cost);
       if (!Number.isFinite(cost) || cost < 0) throw new ProductError("원가는 0 이상의 숫자여야 합니다.");
       product.cost = cost;
+    }
+    if (patch.hasSizes !== undefined) {
+      product.hasSizes = Boolean(patch.hasSizes);
+      if (!product.hasSizes) {
+        product.sizes = [];
+      } else if (product.sizes.length === 0) {
+        product.sizes = DEFAULT_SIZE_LABELS.map((label) => ({ label, initialStock: 0, currentStock: 0 }));
+      }
+    }
+    if (patch.sizes !== undefined) {
+      product.sizes = normalizeSizesInput(patch.sizes);
     }
     if (patch.initialStock !== undefined) {
       const initialStock = Number(patch.initialStock);

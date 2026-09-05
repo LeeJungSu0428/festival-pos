@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 
 type Category = "new-materials" | "international-hall";
+type ProductSize = { label: string; initialStock: number; currentStock: number };
 
 type Product = {
   id: string;
@@ -10,6 +11,8 @@ type Product = {
   category: Category;
   price: number;
   cost: number;
+  hasSizes: boolean;
+  sizes: ProductSize[];
   initialStock: number;
   currentStock: number;
   lowStockThreshold: number;
@@ -22,12 +25,16 @@ const CATEGORY_LABEL: Record<Category, string> = {
   "international-hall": "국제관",
 };
 
+const SIZE_LABELS = ["S", "M", "L", "XL", "2XL", "3XL"];
+
 const emptyForm = {
   name: "",
   category: "new-materials" as Category,
   price: "",
   cost: "",
+  hasSizes: false,
   initialStock: "",
+  sizeStocks: Object.fromEntries(SIZE_LABELS.map((l) => [l, ""])) as Record<string, string>,
   lowStockThreshold: "10",
   imageUrl: "",
 };
@@ -61,7 +68,11 @@ export default function ProductsPage() {
         category: form.category,
         price: Number(form.price),
         cost: Number(form.cost),
-        initialStock: Number(form.initialStock),
+        hasSizes: form.hasSizes,
+        sizes: form.hasSizes
+          ? SIZE_LABELS.map((label) => ({ label, initialStock: Number(form.sizeStocks[label] || 0) }))
+          : undefined,
+        initialStock: form.hasSizes ? undefined : Number(form.initialStock),
         lowStockThreshold: Number(form.lowStockThreshold || 10),
         imageUrl: form.imageUrl || null,
       }),
@@ -103,70 +114,105 @@ export default function ProductsPage() {
 
       <form
         onSubmit={handleCreate}
-        className="grid grid-cols-2 items-end gap-3 rounded-lg border border-neutral-200 bg-white p-4 md:grid-cols-6"
+        className="space-y-3 rounded-lg border border-neutral-200 bg-white p-4"
       >
-        <Field label="상품명">
+        <div className="grid grid-cols-2 items-end gap-3 md:grid-cols-6">
+          <Field label="상품명">
+            <input
+              required
+              className="input"
+              value={form.name}
+              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+            />
+          </Field>
+          <Field label="담당 사이트">
+            <select
+              className="input"
+              value={form.category}
+              onChange={(e) => setForm((f) => ({ ...f, category: e.target.value as Category }))}
+            >
+              <option value="new-materials">신소재</option>
+              <option value="international-hall">국제관</option>
+            </select>
+          </Field>
+          <Field label="판매가">
+            <input
+              required
+              type="number"
+              className="input"
+              value={form.price}
+              onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
+            />
+          </Field>
+          <Field label="원가">
+            <input
+              required
+              type="number"
+              className="input"
+              value={form.cost}
+              onChange={(e) => setForm((f) => ({ ...f, cost: e.target.value }))}
+            />
+          </Field>
+          <Field label="부족 기준">
+            <input
+              type="number"
+              className="input"
+              value={form.lowStockThreshold}
+              onChange={(e) => setForm((f) => ({ ...f, lowStockThreshold: e.target.value }))}
+            />
+          </Field>
+          <Field label="이미지 경로/URL">
+            <input
+              className="input"
+              value={form.imageUrl}
+              onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
+              placeholder="/goods/... 또는 선택"
+            />
+          </Field>
+        </div>
+
+        <label className="flex items-center gap-2 text-sm text-neutral-700">
           <input
-            required
-            className="input"
-            value={form.name}
-            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+            type="checkbox"
+            checked={form.hasSizes}
+            onChange={(e) => setForm((f) => ({ ...f, hasSizes: e.target.checked }))}
           />
-        </Field>
-        <Field label="담당 사이트">
-          <select
-            className="input"
-            value={form.category}
-            onChange={(e) => setForm((f) => ({ ...f, category: e.target.value as Category }))}
-          >
-            <option value="new-materials">신소재</option>
-            <option value="international-hall">국제관</option>
-          </select>
-        </Field>
-        <Field label="판매가">
-          <input
-            required
-            type="number"
-            className="input"
-            value={form.price}
-            onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
-          />
-        </Field>
-        <Field label="원가">
-          <input
-            required
-            type="number"
-            className="input"
-            value={form.cost}
-            onChange={(e) => setForm((f) => ({ ...f, cost: e.target.value }))}
-          />
-        </Field>
-        <Field label="초기 재고">
-          <input
-            required
-            type="number"
-            className="input"
-            value={form.initialStock}
-            onChange={(e) => setForm((f) => ({ ...f, initialStock: e.target.value }))}
-          />
-        </Field>
-        <Field label="부족 기준">
-          <input
-            type="number"
-            className="input"
-            value={form.lowStockThreshold}
-            onChange={(e) => setForm((f) => ({ ...f, lowStockThreshold: e.target.value }))}
-          />
-        </Field>
-        <Field label="이미지 URL">
-          <input
-            className="input"
-            value={form.imageUrl}
-            onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
-            placeholder="선택"
-          />
-        </Field>
-        <div className="col-span-2 md:col-span-6">
+          사이즈별로 재고를 관리합니다 (S~3XL)
+        </label>
+
+        {form.hasSizes ? (
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+            {SIZE_LABELS.map((label) => (
+              <Field key={label} label={`${label} 초기재고`}>
+                <input
+                  type="number"
+                  className="input"
+                  value={form.sizeStocks[label]}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      sizeStocks: { ...f.sizeStocks, [label]: e.target.value },
+                    }))
+                  }
+                />
+              </Field>
+            ))}
+          </div>
+        ) : (
+          <div className="sm:w-1/6">
+            <Field label="초기 재고">
+              <input
+                required
+                type="number"
+                className="input"
+                value={form.initialStock}
+                onChange={(e) => setForm((f) => ({ ...f, initialStock: e.target.value }))}
+              />
+            </Field>
+          </div>
+        )}
+
+        <div>
           <button
             disabled={creating}
             className="rounded bg-neutral-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
@@ -196,9 +242,15 @@ export default function ProductsPage() {
                 {p.active ? "판매중" : "판매중지"}
               </span>
             </div>
-            <p className="mt-2 text-sm text-neutral-500">
-              현재 재고 {p.currentStock} / 초기 {p.initialStock}
-            </p>
+            {p.hasSizes ? (
+              <p className="mt-2 text-sm text-neutral-500">
+                재고 합계 {p.sizes.reduce((s, sz) => s + sz.currentStock, 0)}개 (사이즈별)
+              </p>
+            ) : (
+              <p className="mt-2 text-sm text-neutral-500">
+                현재 재고 {p.currentStock} / 초기 {p.initialStock}
+              </p>
+            )}
             <div className="mt-3 flex gap-2">
               <button
                 onClick={() => toggleActive(p)}

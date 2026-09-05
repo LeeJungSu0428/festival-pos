@@ -18,6 +18,8 @@ export async function GET(req: NextRequest) {
     name: p.name,
     category: p.category,
     price: p.price,
+    hasSizes: p.hasSizes,
+    sizes: p.sizes,
     currentStock: p.currentStock,
     active: p.active,
     imageUrl: p.imageUrl,

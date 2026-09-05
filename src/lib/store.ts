@@ -4,14 +4,22 @@ import { Redis } from "@upstash/redis";
 
 export type ProductCategory = "new-materials" | "international-hall";
 
+export type ProductSize = {
+  label: string;
+  initialStock: number;
+  currentStock: number;
+};
+
 export type Product = {
   id: string;
   name: string;
   category: ProductCategory;
   price: number;
   cost: number;
-  initialStock: number;
-  currentStock: number;
+  hasSizes: boolean;
+  sizes: ProductSize[]; // hasSizes가 false면 빈 배열, true면 사이즈별 재고
+  initialStock: number; // hasSizes가 false일 때만 사용
+  currentStock: number; // hasSizes가 false일 때만 사용
   lowStockThreshold: number;
   imageUrl: string | null;
   active: boolean;
@@ -20,6 +28,7 @@ export type Product = {
 export type OrderItem = {
   productId: string;
   name: string;
+  size: string | null; // 사이즈가 있는 상품이면 어떤 사이즈를 팔았는지 기록
   qty: number;
   price: number;
   cost: number;
@@ -36,41 +45,26 @@ export type Order = {
   cancelledAt?: string;
 };
 
-export type GoodsSize = {
-  label: string;
-  available: boolean;
-};
-
-export type GoodsItem = {
-  id: string;
-  name: string;
-  price: number;
-  imageUrl: string | null;
-  hasSizes: boolean;
-  sizes: GoodsSize[]; // hasSizes가 false면 빈 배열
-  active: boolean;
-};
-
 // 굿즈 뷰어에서 손님이 "확인"까지 누른 주문 기록.
-// 재고에는 절대 영향을 주지 않고, 신소재/국제관 관리자가 참고해서
+// 실제 재고(Product)에는 절대 영향을 주지 않고, 신소재/국제관 관리자가 참고해서
 // 각자 사이트에서 수동으로 실제 판매를 입력할 때 참고하는 용도.
 export type GoodsOrderLine = {
-  goodsItemId: string;
+  productId: string;
   name: string;
-  size: string | null; // hasSizes가 false면 null
+  size: string | null;
   qty: number;
   price: number;
 };
 
 export type GoodsOrder = {
   id: string;
+  category: ProductCategory;
   createdAt: string;
   lines: GoodsOrderLine[];
   total: number;
 };
 
 export type GoodsViewerState = {
-  items: GoodsItem[];
   bankInfo: string;
   orders: GoodsOrder[];
 };
@@ -85,8 +79,12 @@ export type Store = {
 const DATA_DIR = path.join(process.cwd(), "data");
 const DATA_FILE = path.join(DATA_DIR, "store.json");
 
-function sizeSet(): GoodsSize[] {
-  return ["S", "M", "L", "XL", "2XL", "3XL"].map((label) => ({ label, available: true }));
+function sizeStockSet(stock: number): ProductSize[] {
+  return ["S", "M", "L", "XL", "2XL", "3XL"].map((label) => ({
+    label,
+    initialStock: stock,
+    currentStock: stock,
+  }));
 }
 
 const DEFAULT_STORE: Store = {
@@ -95,12 +93,14 @@ const DEFAULT_STORE: Store = {
       id: "p1",
       name: "야구 유니폼",
       category: "new-materials",
-      price: 38000,
-      cost: 25000,
-      initialStock: 100,
-      currentStock: 100,
-      lowStockThreshold: 20,
-      imageUrl: null,
+      price: 40000,
+      cost: 31000,
+      hasSizes: true,
+      sizes: sizeStockSet(20),
+      initialStock: 0,
+      currentStock: 0,
+      lowStockThreshold: 5,
+      imageUrl: "/goods/baseball-uniform.png",
       active: true,
     },
     {
@@ -109,23 +109,97 @@ const DEFAULT_STORE: Store = {
       category: "international-hall",
       price: 36000,
       cost: 23000,
-      initialStock: 100,
-      currentStock: 100,
-      lowStockThreshold: 20,
-      imageUrl: null,
+      hasSizes: true,
+      sizes: sizeStockSet(20),
+      initialStock: 0,
+      currentStock: 0,
+      lowStockThreshold: 5,
+      imageUrl: "/goods/soccer-uniform.png",
       active: true,
     },
     {
       id: "p3",
+      name: "애한제티-면",
+      category: "new-materials",
+      price: 20000,
+      cost: 8000,
+      hasSizes: true,
+      sizes: sizeStockSet(20),
+      initialStock: 0,
+      currentStock: 0,
+      lowStockThreshold: 5,
+      imageUrl: "/goods/tshirt-1.png",
+      active: true,
+    },
+    {
+      id: "p4",
+      name: "애한제티-기능성",
+      category: "international-hall",
+      price: 22000,
+      cost: 8000,
+      hasSizes: true,
+      sizes: sizeStockSet(20),
+      initialStock: 0,
+      currentStock: 0,
+      lowStockThreshold: 5,
+      imageUrl: "/goods/tshirt-2.png",
+      active: true,
+    },
+    {
+      id: "p5",
+      name: "티셔츠 3번",
+      category: "new-materials",
+      price: 0,
+      cost: 0,
+      hasSizes: true,
+      sizes: sizeStockSet(20),
+      initialStock: 0,
+      currentStock: 0,
+      lowStockThreshold: 5,
+      imageUrl: "/goods/tshirt-3.png",
+      active: false,
+    },
+    {
+      id: "p6",
       name: "키캡",
       category: "new-materials",
       price: 7000,
       cost: 4000,
+      hasSizes: false,
+      sizes: [],
       initialStock: 100,
       currentStock: 100,
       lowStockThreshold: 20,
-      imageUrl: null,
+      imageUrl: "/goods/keycap.png",
+      active: false,
+    },
+    {
+      id: "p7",
+      name: "타투 스티커",
+      category: "international-hall",
+      price: 4000,
+      cost: 1000,
+      hasSizes: false,
+      sizes: [],
+      initialStock: 100,
+      currentStock: 100,
+      lowStockThreshold: 20,
+      imageUrl: "/goods/tattoo-sticker.png",
       active: true,
+    },
+    {
+      id: "p8",
+      name: "슬로건 카드",
+      category: "new-materials",
+      price: 0,
+      cost: 0,
+      hasSizes: false,
+      sizes: [],
+      initialStock: 100,
+      currentStock: 100,
+      lowStockThreshold: 20,
+      imageUrl: "/goods/slogan-card.png",
+      active: false,
     },
   ],
   orders: [],
@@ -133,80 +207,6 @@ const DEFAULT_STORE: Store = {
   goodsViewer: {
     bankInfo: "신한 110-494-381011",
     orders: [],
-    items: [
-      {
-        id: "g1",
-        name: "야구 유니폼",
-        price: 38000,
-        imageUrl: "/goods/baseball-uniform.png",
-        hasSizes: true,
-        sizes: sizeSet(),
-        active: true,
-      },
-      {
-        id: "g2",
-        name: "축구 유니폼",
-        price: 36000,
-        imageUrl: "/goods/soccer-uniform.png",
-        hasSizes: true,
-        sizes: sizeSet(),
-        active: true,
-      },
-      {
-        id: "g3",
-        name: "티셔츠 1번",
-        price: 0,
-        imageUrl: "/goods/tshirt-1.png",
-        hasSizes: true,
-        sizes: sizeSet(),
-        active: true,
-      },
-      {
-        id: "g4",
-        name: "티셔츠 2번",
-        price: 0,
-        imageUrl: "/goods/tshirt-2.png",
-        hasSizes: true,
-        sizes: sizeSet(),
-        active: true,
-      },
-      {
-        id: "g5",
-        name: "티셔츠 3번",
-        price: 0,
-        imageUrl: "/goods/tshirt-3.png",
-        hasSizes: true,
-        sizes: sizeSet(),
-        active: true,
-      },
-      {
-        id: "g6",
-        name: "키캡",
-        price: 0,
-        imageUrl: "/goods/keycap.png",
-        hasSizes: false,
-        sizes: [],
-        active: true,
-      },
-      {
-        id: "g7",
-        name: "타투 스티커",
-        price: 0,
-        imageUrl: "/goods/tattoo-sticker.png",
-        hasSizes: false,
-        sizes: [],
-        active: true,
-      },
-      {
-        id: "g8",
-        name: "슬로건 카드",
-        price: 0,
-        imageUrl: "/goods/slogan-card.png",
-        hasSizes: false,
-        sizes: [],
-        active: true,
-      },
-    ],
   },
 };
 
@@ -222,9 +222,15 @@ function normalizeStore(store: Store): Store {
   if (!store.goodsViewer.bankInfo) {
     store.goodsViewer.bankInfo = DEFAULT_STORE.goodsViewer.bankInfo;
   }
-  for (const product of store.products) {
+  for (const product of store.products as (Product & { hasSizes?: boolean; sizes?: unknown })[]) {
     if (!product.category) {
       product.category = "new-materials";
+    }
+    if (typeof product.hasSizes !== "boolean") {
+      product.hasSizes = false;
+    }
+    if (!Array.isArray(product.sizes)) {
+      product.sizes = [];
     }
   }
   return store;

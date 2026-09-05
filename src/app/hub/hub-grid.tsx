@@ -15,6 +15,13 @@ const SITES = [
     href: "/sites/new-materials",
   },
   {
+    key: "new-materials-goods",
+    tag: "VIEWER",
+    title: "신소재 굿즈 뷰어",
+    desc: "신소재 굿즈 이미지와 사이즈를 보여줍니다.",
+    href: "/goods-viewer/new-materials",
+  },
+  {
     key: "international-hall",
     tag: "INVENTORY",
     title: "국제관 재고 관리",
@@ -22,11 +29,11 @@ const SITES = [
     href: "/sites/international-hall",
   },
   {
-    key: "goods-viewer",
+    key: "international-hall-goods",
     tag: "VIEWER",
-    title: "굿즈 뷰어",
-    desc: "굿즈 이미지와 사이즈를 보여줍니다.",
-    href: "/goods-viewer",
+    title: "국제관 굿즈 뷰어",
+    desc: "국제관 굿즈 이미지와 사이즈를 보여줍니다.",
+    href: "/goods-viewer/international-hall",
   },
 ];
 

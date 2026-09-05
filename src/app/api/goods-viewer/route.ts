@@ -1,32 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getGoodsViewer, updateGoodsItem, setGoodsItemSizeAvailable } from "@/lib/goods-viewer";
-import { errorResponse } from "@/lib/api";
+import { getGoodsViewerForCategory } from "@/lib/goods-viewer";
+import type { ProductCategory } from "@/lib/store";
 
-export async function GET() {
-  const state = await getGoodsViewer();
-  return NextResponse.json(state);
-}
+const VALID: ProductCategory[] = ["new-materials", "international-hall"];
 
-export async function PATCH(req: NextRequest) {
-  try {
-    const body = await req.json();
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const category = searchParams.get("category") as ProductCategory | null;
 
-    if (!body.itemId || typeof body.itemId !== "string") {
-      return NextResponse.json({ error: "잘못된 요청입니다." }, { status: 400 });
-    }
-
-    if (typeof body.size === "string" && typeof body.available === "boolean") {
-      const state = await setGoodsItemSizeAvailable(body.itemId, body.size, body.available);
-      return NextResponse.json(state);
-    }
-
-    if (body.patch && typeof body.patch === "object") {
-      const state = await updateGoodsItem(body.itemId, body.patch);
-      return NextResponse.json(state);
-    }
-
-    return NextResponse.json({ error: "잘못된 요청입니다." }, { status: 400 });
-  } catch (err) {
-    return errorResponse(err);
+  if (!category || !VALID.includes(category)) {
+    return NextResponse.json({ error: "잘못된 사이트입니다." }, { status: 400 });
   }
+
+  const data = await getGoodsViewerForCategory(category);
+  return NextResponse.json(data);
 }
