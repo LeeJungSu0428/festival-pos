@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import BrandBackdrop from "@/components/BrandBackdrop";
 
@@ -21,6 +21,35 @@ type Cart = Record<string, number>; // key: `${productId}::${size ?? "none"}`
 
 function cartKey(productId: string, size: string | null) {
   return `${productId}::${size ?? "none"}`;
+}
+
+function isSoldOut(p: Product) {
+  if (p.hasSizes) return p.sizes.every((s) => s.currentStock <= 0);
+  return p.currentStock <= 0;
+}
+
+function StepperButton({
+  onClick,
+  disabled,
+  active,
+  children,
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+  active?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold disabled:opacity-30 ${
+        active ? "bg-[#26415F] text-[#FBFDFF]" : "border border-[#C9D6E4] text-[#26415F]"
+      }`}
+    >
+      {children}
+    </button>
+  );
 }
 
 export default function GoodsViewerView({
@@ -108,126 +137,181 @@ export default function GoodsViewerView({
     load();
   }
 
+  const checkoutPanel = (
+    <div className="rounded-2xl border border-[#D7E2EE] bg-[#FBFDFF] p-5">
+      <p className="text-xs font-semibold tracking-[0.15em] text-[#5B7FA6]">CHECKOUT</p>
+      <h2 className="mt-1 text-lg font-bold text-[#26415F]">주문서</h2>
+
+      {lines.length === 0 ? (
+        <p className="mt-4 rounded-lg bg-[#F3F7FB] p-4 text-sm text-[#5B6B82]">
+          선택한 굿즈가 없습니다.
+          <br />
+          상품 카드에서 + 버튼으로 수량을 담아주세요.
+        </p>
+      ) : (
+        <ul className="mt-4 space-y-2">
+          {lines.map((l) => (
+            <li
+              key={`${l.productId}-${l.size ?? "none"}`}
+              className="flex items-center justify-between text-sm"
+            >
+              <span className="text-[#26415F]">
+                {l.name}
+                {l.size && ` (${l.size})`} × {l.qty}
+              </span>
+              <span className="font-medium text-[#26415F]">
+                ₩{(l.price * l.qty).toLocaleString("ko-KR")}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div className="mt-4 flex items-center justify-between border-t border-[#E8EEF5] pt-4">
+        <span className="text-sm text-[#5B6B82]">합계</span>
+        <span className="text-xl font-bold text-[#26415F]">₩{total.toLocaleString("ko-KR")}</span>
+      </div>
+
+      <button
+        onClick={confirmOrder}
+        disabled={lines.length === 0 || submitting}
+        className="mt-4 w-full rounded-lg bg-[#26415F] px-4 py-3 text-sm font-semibold text-[#FBFDFF] disabled:opacity-40"
+      >
+        {submitting ? "처리 중…" : "주문 확인"}
+      </button>
+    </div>
+  );
+
   return (
-    <div className="relative min-h-screen pb-32">
+    <div className="relative min-h-screen pb-10">
       <BrandBackdrop />
       <header className="flex items-center justify-between border-b border-[#D7E2EE] bg-[#FBFDFF] px-4 py-3 sm:px-6">
         <div>
-          <p className="text-xs tracking-[0.2em] text-[#5B7FA6]">애국한양응원제 : 오름</p>
+          <p className="text-xs font-semibold tracking-[0.15em] text-[#5B7FA6]">ORDER</p>
           <h1 className="text-lg font-bold text-[#26415F]">{title}</h1>
-          <p className="text-xs text-[#9AAEC4]">신소재·국제관 전체 굿즈 목록입니다.</p>
         </div>
         <Link href="/hub" className="text-sm text-[#5B6B82] hover:text-[#26415F]">
           ← 허브로
         </Link>
       </header>
 
-      {error && <p className="px-4 pt-4 text-sm text-red-600 sm:px-6">{error}</p>}
-
-      <main className="grid gap-4 p-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-3">
-        {products.map((p) => (
-          <div
-            key={p.id}
-            className="relative overflow-hidden rounded-xl border border-[#D7E2EE] bg-[#FBFDFF]"
-          >
-            <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-[#5B7FA6]/15 blur-2xl" />
-            <div className="relative flex aspect-[20/9] items-center justify-center bg-[#E8EEF5]">
-              {p.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={p.imageUrl} alt={p.name} className="h-full w-full object-contain" />
-              ) : (
-                <span className="text-sm text-[#9AAEC4]">이미지 없음</span>
-              )}
-            </div>
-
-            <div className="relative p-4">
-              <p className="font-semibold text-[#26415F]">{p.name}</p>
-              <p className="text-sm text-[#5B6B82]">
-                ₩{p.price.toLocaleString("ko-KR")}
-                {!p.hasSizes && ` · 재고 ${p.currentStock}`}
-              </p>
-
-              <div className="mt-3 space-y-2">
-                {p.hasSizes ? (
-                  p.sizes.map((size) => {
-                    const soldOut = size.currentStock <= 0;
-                    const qty = cart[cartKey(p.id, size.label)] ?? 0;
-                    return (
-                      <div key={size.label} className="flex items-center justify-between">
-                        <span
-                          className={`text-sm font-medium ${
-                            soldOut ? "text-[#9AAEC4] line-through" : "text-[#26415F]"
-                          }`}
-                        >
-                          {size.label}
-                          {soldOut ? " (품절)" : ` · 재고 ${size.currentStock}`}
-                        </span>
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={() => changeQty(p, size.label, -1)}
-                            disabled={soldOut}
-                            className="h-7 w-7 rounded-full border border-[#C9D6E4] text-sm font-semibold text-[#26415F] disabled:opacity-30"
-                          >
-                            −
-                          </button>
-                          <span className="w-5 text-center text-sm font-semibold text-[#26415F]">{qty}</span>
-                          <button
-                            onClick={() => changeQty(p, size.label, 1)}
-                            disabled={soldOut || qty >= size.currentStock}
-                            className="h-7 w-7 rounded-full border border-[#C9D6E4] text-sm font-semibold text-[#26415F] disabled:opacity-30"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="flex items-center justify-end gap-3">
-                    <button
-                      onClick={() => changeQty(p, null, -1)}
-                      className="h-7 w-7 rounded-full border border-[#C9D6E4] text-sm font-semibold text-[#26415F]"
-                    >
-                      −
-                    </button>
-                    <span className="w-5 text-center text-sm font-semibold text-[#26415F]">
-                      {cart[cartKey(p.id, null)] ?? 0}
-                    </span>
-                    <button
-                      onClick={() => changeQty(p, null, 1)}
-                      disabled={(cart[cartKey(p.id, null)] ?? 0) >= p.currentStock}
-                      className="h-7 w-7 rounded-full border border-[#C9D6E4] text-sm font-semibold text-[#26415F] disabled:opacity-30"
-                    >
-                      +
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-        {products.length === 0 && (
-          <p className="col-span-full text-sm text-[#9AAEC4]">
-            이 사이트에 판매중인 굿즈가 없습니다. 슈퍼관리자 Products에서 상품을 추가하고 담당 사이트를
-            지정해주세요.
-          </p>
-        )}
-      </main>
-
-      <div className="fixed bottom-0 left-0 right-0 border-t border-[#D7E2EE] bg-[#FBFDFF] p-4 sm:px-6">
-        <div className="mx-auto flex max-w-3xl items-center justify-between">
-          <div>
-            <p className="text-xs text-[#5B6B82]">{lines.length}개 항목 선택됨</p>
-            <p className="text-xl font-bold text-[#26415F]">₩{total.toLocaleString("ko-KR")}</p>
-          </div>
-          <button
-            onClick={confirmOrder}
-            disabled={lines.length === 0 || submitting}
-            className="rounded-lg bg-[#26415F] px-8 py-3 text-base font-semibold text-[#FBFDFF] disabled:opacity-40"
-          >
-            {submitting ? "처리 중…" : "주문 확인"}
-          </button>
+      <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6">
+        <div className="mb-5 rounded-lg bg-[#E8EEF5] px-4 py-3 text-sm text-[#26415F]">
+          상품 카드에서 옵션별 수량을 조절하고{" "}
+          <span className="hidden lg:inline">오른쪽 주문서에서</span>
+          <span className="lg:hidden">아래 주문서에서</span> 주문을 확인해주세요.
         </div>
+
+        {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
+
+        <div className="grid gap-6 lg:grid-cols-[1fr_320px] lg:items-start">
+          <div className="grid gap-5 sm:grid-cols-2">
+            {products.map((p) => {
+              const soldOut = isSoldOut(p);
+              return (
+                <div key={p.id} className="overflow-hidden rounded-xl border border-[#D7E2EE] bg-[#FBFDFF]">
+                  <div className="flex aspect-[20/9] items-center justify-center bg-[#E8EEF5]">
+                    {p.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={p.imageUrl} alt={p.name} className="h-full w-full object-contain" />
+                    ) : (
+                      <span className="text-sm text-[#9AAEC4]">이미지 없음</span>
+                    )}
+                  </div>
+
+                  <div className="p-5">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-base font-semibold text-[#26415F]">{p.name}</p>
+                      <span
+                        className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${
+                          soldOut ? "bg-neutral-100 text-neutral-500" : "bg-emerald-50 text-emerald-700"
+                        }`}
+                      >
+                        {soldOut ? "품절" : "판매중"}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-lg font-bold text-[#26415F]">
+                      ₩{p.price.toLocaleString("ko-KR")}
+                    </p>
+
+                    <div className="mt-4 space-y-3">
+                      {p.hasSizes ? (
+                        p.sizes.map((size) => {
+                          const sizeSoldOut = size.currentStock <= 0;
+                          const qty = cart[cartKey(p.id, size.label)] ?? 0;
+                          return (
+                            <div key={size.label} className="flex items-center justify-between">
+                              <div>
+                                <p
+                                  className={`text-sm font-semibold ${
+                                    sizeSoldOut ? "text-[#9AAEC4] line-through" : "text-[#26415F]"
+                                  }`}
+                                >
+                                  {size.label}
+                                </p>
+                                <p className="text-xs text-[#9AAEC4]">
+                                  {sizeSoldOut ? "품절" : `남은 재고 ${size.currentStock}개`}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <StepperButton onClick={() => changeQty(p, size.label, -1)} disabled={sizeSoldOut}>
+                                  −
+                                </StepperButton>
+                                <span className="w-4 text-center text-sm font-semibold text-[#26415F]">
+                                  {qty}
+                                </span>
+                                <StepperButton
+                                  onClick={() => changeQty(p, size.label, 1)}
+                                  disabled={sizeSoldOut || qty >= size.currentStock}
+                                  active={qty > 0}
+                                >
+                                  +
+                                </StepperButton>
+                              </div>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-[#9AAEC4]">
+                            {soldOut ? "품절" : `남은 재고 ${p.currentStock}개`}
+                          </p>
+                          <div className="flex items-center gap-3">
+                            <StepperButton onClick={() => changeQty(p, null, -1)} disabled={soldOut}>
+                              −
+                            </StepperButton>
+                            <span className="w-4 text-center text-sm font-semibold text-[#26415F]">
+                              {cart[cartKey(p.id, null)] ?? 0}
+                            </span>
+                            <StepperButton
+                              onClick={() => changeQty(p, null, 1)}
+                              disabled={soldOut || (cart[cartKey(p.id, null)] ?? 0) >= p.currentStock}
+                              active={(cart[cartKey(p.id, null)] ?? 0) > 0}
+                            >
+                              +
+                            </StepperButton>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            {products.length === 0 && (
+              <p className="col-span-full text-sm text-[#9AAEC4]">
+                이 사이트에 판매중인 굿즈가 없습니다. 슈퍼관리자 Products에서 상품을 추가하고 담당 사이트를
+                지정해주세요.
+              </p>
+            )}
+          </div>
+
+          <aside className="hidden lg:block">
+            <div className="sticky top-5">{checkoutPanel}</div>
+          </aside>
+        </div>
+
+        <div className="mt-6 lg:hidden">{checkoutPanel}</div>
       </div>
 
       {confirmedOrder && (

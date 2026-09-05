@@ -100,6 +100,18 @@ export default function ProductsPage() {
     load();
   }
 
+  function updateLocal(id: string, patch: Partial<Product>) {
+    setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+  }
+
+  async function saveField(id: string, patch: Record<string, unknown>) {
+    await fetch(`/api/products/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch),
+    });
+  }
+
   async function remove(p: Product) {
     if (!confirm(`'${p.name}' 상품을 삭제할까요? 이 작업은 되돌릴 수 없습니다.`)) return;
     await fetch(`/api/products/${p.id}`, { method: "DELETE" });
@@ -254,13 +266,12 @@ export default function ProductsPage() {
         {products.map((p) => (
           <div key={p.id} className="rounded-lg border border-neutral-200 bg-white p-4">
             <div className="flex items-start justify-between gap-2">
-              <div>
-                <p className="font-semibold text-neutral-900">{p.name}</p>
-                <p className="text-sm text-neutral-500">
-                  {CATEGORY_LABEL[p.category]} · ₩{p.price.toLocaleString("ko-KR")} · 원가 ₩
-                  {p.cost.toLocaleString("ko-KR")}
-                </p>
-              </div>
+              <input
+                className="input flex-1 font-semibold text-neutral-900"
+                value={p.name}
+                onChange={(e) => updateLocal(p.id, { name: e.target.value })}
+                onBlur={(e) => saveField(p.id, { name: e.target.value })}
+              />
               <span
                 className={`shrink-0 rounded-full px-2 py-0.5 text-xs ${
                   p.active ? "bg-emerald-50 text-emerald-700" : "bg-neutral-100 text-neutral-500"
@@ -269,9 +280,62 @@ export default function ProductsPage() {
                 {p.active ? "판매중" : "판매중지"}
               </span>
             </div>
+
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <label className="block">
+                <span className="mb-1 block text-xs font-medium text-neutral-500">담당</span>
+                <select
+                  className="input"
+                  value={p.category}
+                  onChange={(e) => {
+                    const category = e.target.value as Category;
+                    updateLocal(p.id, { category });
+                    saveField(p.id, { category });
+                  }}
+                >
+                  <option value="new-materials">신소재</option>
+                  <option value="international-hall">국제관</option>
+                </select>
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="block">
+                  <span className="mb-1 block text-xs font-medium text-neutral-500">판매가</span>
+                  <input
+                    type="number"
+                    className="input"
+                    value={p.price}
+                    onChange={(e) => updateLocal(p.id, { price: Number(e.target.value) })}
+                    onBlur={(e) => saveField(p.id, { price: Number(e.target.value) })}
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-xs font-medium text-neutral-500">원가</span>
+                  <input
+                    type="number"
+                    className="input"
+                    value={p.cost}
+                    onChange={(e) => updateLocal(p.id, { cost: Number(e.target.value) })}
+                    onBlur={(e) => saveField(p.id, { cost: Number(e.target.value) })}
+                  />
+                </label>
+              </div>
+            </div>
+
+            <label className="mt-2 block">
+              <span className="mb-1 block text-xs font-medium text-neutral-500">이미지 경로/URL</span>
+              <input
+                className="input"
+                value={p.imageUrl ?? ""}
+                onChange={(e) => updateLocal(p.id, { imageUrl: e.target.value })}
+                onBlur={(e) => saveField(p.id, { imageUrl: e.target.value || null })}
+                placeholder="/goods/... 또는 https://…"
+              />
+            </label>
+
             {p.hasSizes ? (
               <p className="mt-2 text-sm text-neutral-500">
-                현재 재고 합계 {p.sizes.reduce((s, sz) => s + sz.currentStock, 0)}개 (사이즈별)
+                현재 재고 합계 {p.sizes.reduce((s, sz) => s + sz.currentStock, 0)}개 (사이즈별 재고는
+                Inventory에서 수정)
               </p>
             ) : (
               <p className="mt-2 text-sm text-neutral-500">현재 재고 {p.currentStock}개</p>
