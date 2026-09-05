@@ -35,6 +35,9 @@ export default function SitePos({
   const [cart, setCart] = useState<Cart>({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [confirmForm, setConfirmForm] = useState({ sellerName: "", sellerPhone: "", managerName: "" });
+  const [confirmError, setConfirmError] = useState<string | null>(null);
   const [lastOrder, setLastOrder] = useState<{ id: string; orderNumber: number; total: number } | null>(
     null
   );
@@ -85,9 +88,24 @@ export default function SitePos({
 
   const total = lines.reduce((s, l) => s + l.price * l.qty, 0);
 
-  async function complete() {
+  function openConfirm() {
     if (lines.length === 0) return;
+    setConfirmForm({ sellerName: "", sellerPhone: "", managerName: "" });
+    setConfirmError(null);
+    setShowConfirm(true);
+  }
+
+  async function submitSale() {
+    const sellerName = confirmForm.sellerName.trim();
+    const sellerPhone = confirmForm.sellerPhone.trim();
+    const managerName = confirmForm.managerName.trim();
+    if (!sellerName || !sellerPhone || !managerName) {
+      setConfirmError("판매자 이름, 전화번호, 재고관리 담당자 이름을 모두 입력해주세요.");
+      return;
+    }
+
     setSubmitting(true);
+    setConfirmError(null);
     setError(null);
 
     const res = await fetch("/api/orders", {
@@ -95,16 +113,21 @@ export default function SitePos({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         items: lines.map((l) => ({ productId: l.productId, size: l.size, qty: l.qty })),
+        sellerName,
+        sellerPhone,
+        managerName,
       }),
     });
     const data = await res.json().catch(() => ({}));
     setSubmitting(false);
 
     if (!res.ok) {
-      setError(data.error ?? "판매 처리 중 오류가 발생했습니다.");
+      setConfirmError(data.error ?? "판매 처리 중 오류가 발생했습니다.");
       return;
     }
 
+    setShowConfirm(false);
+    setConfirmForm({ sellerName: "", sellerPhone: "", managerName: "" });
     setLastOrder({ id: data.id, orderNumber: data.orderNumber, total: data.total });
     setCart({});
     load();
@@ -240,14 +263,74 @@ export default function SitePos({
             <p className="text-xl font-bold text-[#26415F]">₩{total.toLocaleString("ko-KR")}</p>
           </div>
           <button
-            onClick={complete}
+            onClick={openConfirm}
             disabled={lines.length === 0 || submitting}
             className="rounded-lg bg-[#26415F] px-8 py-3 text-base font-semibold text-[#FBFDFF] disabled:opacity-40"
           >
-            {submitting ? "처리 중…" : "판매 완료"}
+            판매 완료
           </button>
         </div>
       </div>
+
+      {showConfirm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => !submitting && setShowConfirm(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm rounded-2xl border border-[#D7E2EE] bg-[#FBFDFF] p-6"
+          >
+            <p className="text-lg font-semibold text-[#26415F]">판매 정보 입력</p>
+            <p className="mt-1 text-sm text-[#5B6B82]">
+              ₩{total.toLocaleString("ko-KR")} · {lines.length}개 항목 · 정확하게 입력해주세요.
+            </p>
+
+            <label className="mt-4 block text-sm font-medium text-[#26415F]">판매자 이름</label>
+            <input
+              autoFocus
+              className="mt-1 w-full rounded-lg border border-[#C9D6E4] bg-white px-3 py-2 text-sm text-[#26415F] outline-none focus:border-[#3B5B82]"
+              value={confirmForm.sellerName}
+              onChange={(e) => setConfirmForm((f) => ({ ...f, sellerName: e.target.value }))}
+            />
+
+            <label className="mt-3 block text-sm font-medium text-[#26415F]">판매자 전화번호</label>
+            <input
+              className="mt-1 w-full rounded-lg border border-[#C9D6E4] bg-white px-3 py-2 text-sm text-[#26415F] outline-none focus:border-[#3B5B82]"
+              value={confirmForm.sellerPhone}
+              onChange={(e) => setConfirmForm((f) => ({ ...f, sellerPhone: e.target.value }))}
+              placeholder="010-0000-0000"
+            />
+
+            <label className="mt-3 block text-sm font-medium text-[#26415F]">재고관리 담당자 이름</label>
+            <input
+              className="mt-1 w-full rounded-lg border border-[#C9D6E4] bg-white px-3 py-2 text-sm text-[#26415F] outline-none focus:border-[#3B5B82]"
+              value={confirmForm.managerName}
+              onChange={(e) => setConfirmForm((f) => ({ ...f, managerName: e.target.value }))}
+            />
+
+            {confirmError && <p className="mt-3 text-sm text-red-600">{confirmError}</p>}
+
+            <div className="mt-5 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setShowConfirm(false)}
+                disabled={submitting}
+                className="flex-1 rounded-full border border-[#C9D6E4] px-4 py-2 text-sm font-medium text-[#26415F] disabled:opacity-50"
+              >
+                취소
+              </button>
+              <button
+                onClick={submitSale}
+                disabled={submitting}
+                className="flex-1 rounded-full bg-[#26415F] px-4 py-2 text-sm font-medium text-[#FBFDFF] disabled:opacity-50"
+              >
+                {submitting ? "처리 중…" : "판매 확정"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

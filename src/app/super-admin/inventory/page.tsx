@@ -76,7 +76,6 @@ export default function InventoryPage() {
         price: product.price,
         cost: product.cost,
         sizes: product.sizes,
-        initialStock: product.initialStock,
         currentStock: product.currentStock,
         lowStockThreshold: product.lowStockThreshold,
         imageUrl: product.imageUrl,
@@ -192,7 +191,7 @@ export default function InventoryPage() {
                     {p.hasSizes ? (
                       <div className="mt-3">
                         <span className="mb-1 block text-xs font-medium text-neutral-500">
-                          사이즈별 재고 (초기 / 현재)
+                          사이즈별 현재 재고
                         </span>
                         <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
                           {p.sizes.map((size) => (
@@ -200,43 +199,22 @@ export default function InventoryPage() {
                               <p className="mb-1 text-center text-xs font-semibold text-neutral-700">
                                 {size.label}
                               </p>
-                              <div className="flex gap-1">
-                                <input
-                                  type="number"
-                                  className="input w-full px-1 text-center"
-                                  value={size.initialStock}
-                                  onChange={(e) =>
-                                    updateSizeLocal(p.id, size.label, {
-                                      initialStock: Number(e.target.value),
-                                    })
-                                  }
-                                />
-                                <input
-                                  type="number"
-                                  className="input w-full px-1 text-center"
-                                  value={size.currentStock}
-                                  onChange={(e) =>
-                                    updateSizeLocal(p.id, size.label, {
-                                      currentStock: Number(e.target.value),
-                                    })
-                                  }
-                                />
-                              </div>
+                              <input
+                                type="number"
+                                className="input w-full px-1 text-center"
+                                value={size.currentStock}
+                                onChange={(e) =>
+                                  updateSizeLocal(p.id, size.label, {
+                                    currentStock: Number(e.target.value),
+                                  })
+                                }
+                              />
                             </div>
                           ))}
                         </div>
                       </div>
                     ) : (
-                      <div className="mt-3 grid grid-cols-2 gap-3 sm:w-1/3">
-                        <label className="block">
-                          <span className="mb-1 block text-xs font-medium text-neutral-500">초기 재고</span>
-                          <input
-                            type="number"
-                            className="input"
-                            value={p.initialStock}
-                            onChange={(e) => updateLocal(p.id, { initialStock: Number(e.target.value) })}
-                          />
-                        </label>
+                      <div className="mt-3 sm:w-1/6">
                         <label className="block">
                           <span className="mb-1 block text-xs font-medium text-neutral-500">현재 재고</span>
                           <input

@@ -12,6 +12,9 @@ type Order = {
   total: number;
   totalCost: number;
   cancelledAt?: string;
+  sellerName: string;
+  sellerPhone: string;
+  managerName: string;
 };
 
 const emptyFilters = {
@@ -67,7 +70,20 @@ export default function SalesHistoryPage() {
   }
 
   function downloadCsv() {
-    const header = ["주문번호", "판매시간", "상태", "상품", "사이즈", "수량", "판매가", "원가", "소계"];
+    const header = [
+      "주문번호",
+      "판매시간",
+      "상태",
+      "판매자",
+      "판매자 전화번호",
+      "재고관리 담당자",
+      "상품",
+      "사이즈",
+      "수량",
+      "판매가",
+      "원가",
+      "소계",
+    ];
     const rows: string[][] = [];
     for (const o of orders) {
       for (const item of o.items) {
@@ -75,6 +91,9 @@ export default function SalesHistoryPage() {
           String(o.orderNumber),
           o.createdAt,
           o.status === "completed" ? "판매완료" : "취소",
+          o.sellerName,
+          o.sellerPhone,
+          o.managerName,
           item.name,
           item.size ?? "",
           String(item.qty),
@@ -226,6 +245,11 @@ export default function SalesHistoryPage() {
                 </button>
                 {isOpen && (
                   <div className="border-t border-neutral-100 px-4 py-3">
+                    <p className="mb-2 text-sm text-neutral-500">
+                      판매자: <span className="text-neutral-800">{o.sellerName || "-"}</span> (
+                      {o.sellerPhone || "-"}) · 재고관리 담당자:{" "}
+                      <span className="text-neutral-800">{o.managerName || "-"}</span>
+                    </p>
                     <table className="w-full text-sm">
                       <thead className="text-left text-neutral-500">
                         <tr>

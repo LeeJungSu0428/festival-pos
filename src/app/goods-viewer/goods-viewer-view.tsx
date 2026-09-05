@@ -141,7 +141,10 @@ export default function GoodsViewerView({
 
             <div className="relative p-4">
               <p className="font-semibold text-[#26415F]">{p.name}</p>
-              <p className="text-sm text-[#5B6B82]">₩{p.price.toLocaleString("ko-KR")}</p>
+              <p className="text-sm text-[#5B6B82]">
+                ₩{p.price.toLocaleString("ko-KR")}
+                {!p.hasSizes && ` · 재고 ${p.currentStock}`}
+              </p>
 
               <div className="mt-3 space-y-2">
                 {p.hasSizes ? (
@@ -156,7 +159,7 @@ export default function GoodsViewerView({
                           }`}
                         >
                           {size.label}
-                          {soldOut && " (품절)"}
+                          {soldOut ? " (품절)" : ` · 재고 ${size.currentStock}`}
                         </span>
                         <div className="flex items-center gap-3">
                           <button

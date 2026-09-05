@@ -43,6 +43,9 @@ export type Order = {
   total: number;
   totalCost: number;
   cancelledAt?: string;
+  sellerName: string;
+  sellerPhone: string;
+  managerName: string;
 };
 
 // 굿즈 뷰어에서 손님이 "확인"까지 누른 주문 기록.
@@ -157,7 +160,7 @@ const DEFAULT_STORE: Store = {
       currentStock: 0,
       lowStockThreshold: 5,
       imageUrl: "/goods/tshirt-3.png",
-      active: false,
+      active: true,
     },
     {
       id: "p6",
@@ -199,7 +202,7 @@ const DEFAULT_STORE: Store = {
       currentStock: 100,
       lowStockThreshold: 20,
       imageUrl: "/goods/slogan-card.png",
-      active: false,
+      active: true,
     },
   ],
   orders: [],
@@ -232,6 +235,11 @@ function normalizeStore(store: Store): Store {
     if (!Array.isArray(product.sizes)) {
       product.sizes = [];
     }
+  }
+  for (const order of store.orders as (Order & Partial<Order>)[]) {
+    if (typeof order.sellerName !== "string") order.sellerName = "";
+    if (typeof order.sellerPhone !== "string") order.sellerPhone = "";
+    if (typeof order.managerName !== "string") order.managerName = "";
   }
   return store;
 }

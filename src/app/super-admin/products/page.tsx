@@ -210,7 +210,7 @@ export default function ProductsPage() {
         {form.hasSizes ? (
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
             {SIZE_LABELS.map((label) => (
-              <Field key={label} label={`${label} 초기재고`}>
+              <Field key={label} label={`${label} 재고`}>
                 <input
                   type="number"
                   className="input"
@@ -227,7 +227,7 @@ export default function ProductsPage() {
           </div>
         ) : (
           <div className="sm:w-1/6">
-            <Field label="초기 재고">
+            <Field label="재고">
               <input
                 required
                 type="number"
@@ -271,12 +271,10 @@ export default function ProductsPage() {
             </div>
             {p.hasSizes ? (
               <p className="mt-2 text-sm text-neutral-500">
-                재고 합계 {p.sizes.reduce((s, sz) => s + sz.currentStock, 0)}개 (사이즈별)
+                현재 재고 합계 {p.sizes.reduce((s, sz) => s + sz.currentStock, 0)}개 (사이즈별)
               </p>
             ) : (
-              <p className="mt-2 text-sm text-neutral-500">
-                현재 재고 {p.currentStock} / 초기 {p.initialStock}
-              </p>
+              <p className="mt-2 text-sm text-neutral-500">현재 재고 {p.currentStock}개</p>
             )}
             <div className="mt-3 flex gap-2">
               <button
