@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "축제 판매 시스템",
-  description: "축제 현장 판매 · 재고 · 매출 관리 시스템",
+  title: "애국한양응원제 : 오름",
+  description: "애국한양응원제 오름 - 현장 판매·재고·굿즈 관리 시스템",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

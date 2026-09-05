@@ -12,7 +12,7 @@ export default function LogoutLink() {
   }
 
   return (
-    <button onClick={handleLogout} className="text-sm text-neutral-500 hover:text-red-600">
+    <button onClick={handleLogout} className="text-sm text-[#8A6F52] hover:text-red-600">
       로그아웃
     </button>
   );
