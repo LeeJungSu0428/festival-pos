@@ -32,8 +32,8 @@ const SITES = [
 
 function CardShell({ children }: { children: ReactNode }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-[#E7D9C3] bg-[#FFFCF6] p-6">
-      <div className="pointer-events-none absolute -bottom-8 -right-8 h-32 w-32 rounded-full bg-[#D99A5B]/25 blur-2xl" />
+    <div className="relative overflow-hidden rounded-2xl border border-[#D7E2EE] bg-[#FBFDFF] p-6">
+      <div className="pointer-events-none absolute -bottom-8 -right-8 h-32 w-32 rounded-full bg-[#5B7FA6]/25 blur-2xl" />
       <div className="relative">{children}</div>
     </div>
   );
@@ -73,10 +73,10 @@ export default function HubGrid({ role }: { role: Role }) {
       {SITES.map((site) => (
         <Link key={site.key} href={site.href} className="block transition hover:-translate-y-0.5">
           <CardShell>
-            <p className="text-xs font-semibold tracking-[0.2em] text-[#B4632B]">{site.tag}</p>
-            <h2 className="mt-2 text-xl font-bold text-[#3E2A1B]">{site.title}</h2>
-            <p className="mt-2 text-sm text-[#8A6F52]">{site.desc}</p>
-            <span className="mt-5 inline-block rounded-full bg-[#F1E3D0] px-4 py-2 text-sm font-medium text-[#5B3A22]">
+            <p className="text-xs font-semibold tracking-[0.2em] text-[#3B5B82]">{site.tag}</p>
+            <h2 className="mt-2 text-xl font-bold text-[#26415F]">{site.title}</h2>
+            <p className="mt-2 text-sm text-[#5B6B82]">{site.desc}</p>
+            <span className="mt-5 inline-block rounded-full bg-[#E8EEF5] px-4 py-2 text-sm font-medium text-[#26415F]">
               바로가기
             </span>
           </CardShell>
@@ -86,10 +86,10 @@ export default function HubGrid({ role }: { role: Role }) {
       {role === "super" ? (
         <Link href="/super-admin" className="block transition hover:-translate-y-0.5">
           <CardShell>
-            <p className="text-xs font-semibold tracking-[0.2em] text-[#B4632B]">ADMIN</p>
-            <h2 className="mt-2 text-xl font-bold text-[#3E2A1B]">총 재고관리</h2>
-            <p className="mt-2 text-sm text-[#8A6F52]">전체 매출/재고/판매기록을 관리합니다.</p>
-            <span className="mt-5 inline-block rounded-full bg-[#3E2A1B] px-4 py-2 text-sm font-medium text-[#FFFCF6]">
+            <p className="text-xs font-semibold tracking-[0.2em] text-[#3B5B82]">ADMIN</p>
+            <h2 className="mt-2 text-xl font-bold text-[#26415F]">총 재고관리</h2>
+            <p className="mt-2 text-sm text-[#5B6B82]">전체 매출/재고/판매기록을 관리합니다.</p>
+            <span className="mt-5 inline-block rounded-full bg-[#26415F] px-4 py-2 text-sm font-medium text-[#FBFDFF]">
               바로가기
             </span>
           </CardShell>
@@ -97,10 +97,10 @@ export default function HubGrid({ role }: { role: Role }) {
       ) : (
         <button onClick={() => setShowGate(true)} className="block text-left transition hover:-translate-y-0.5">
           <CardShell>
-            <p className="text-xs font-semibold tracking-[0.2em] text-[#B4632B]">ADMIN 🔒</p>
-            <h2 className="mt-2 text-xl font-bold text-[#3E2A1B]">총 재고관리</h2>
-            <p className="mt-2 text-sm text-[#8A6F52]">슈퍼관리자 비밀번호가 필요합니다.</p>
-            <span className="mt-5 inline-block rounded-full border border-[#D9C7AE] bg-transparent px-4 py-2 text-sm font-medium text-[#5B3A22]">
+            <p className="text-xs font-semibold tracking-[0.2em] text-[#3B5B82]">ADMIN 🔒</p>
+            <h2 className="mt-2 text-xl font-bold text-[#26415F]">총 재고관리</h2>
+            <p className="mt-2 text-sm text-[#5B6B82]">슈퍼관리자 비밀번호가 필요합니다.</p>
+            <span className="mt-5 inline-block rounded-full border border-[#C9D6E4] bg-transparent px-4 py-2 text-sm font-medium text-[#26415F]">
               비밀번호 입력
             </span>
           </CardShell>
@@ -115,15 +115,15 @@ export default function HubGrid({ role }: { role: Role }) {
           <form
             onClick={(e) => e.stopPropagation()}
             onSubmit={handleGateSubmit}
-            className="w-full max-w-sm rounded-2xl border border-[#E7D9C3] bg-[#FFFCF6] p-6"
+            className="w-full max-w-sm rounded-2xl border border-[#D7E2EE] bg-[#FBFDFF] p-6"
           >
-            <p className="text-lg font-semibold text-[#3E2A1B]">슈퍼관리자 비밀번호</p>
+            <p className="text-lg font-semibold text-[#26415F]">슈퍼관리자 비밀번호</p>
             <input
               type="password"
               autoFocus
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-3 w-full rounded-lg border border-[#E3D3BA] bg-[#FBF6EC] px-3 py-2 text-sm text-[#3E2A1B] outline-none focus:border-[#B4632B]"
+              className="mt-3 w-full rounded-lg border border-[#C9D6E4] bg-[#F3F7FB] px-3 py-2 text-sm text-[#26415F] outline-none focus:border-[#3B5B82]"
               placeholder="비밀번호"
             />
             {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
@@ -131,13 +131,13 @@ export default function HubGrid({ role }: { role: Role }) {
               <button
                 type="button"
                 onClick={() => setShowGate(false)}
-                className="flex-1 rounded-full border border-[#D9C7AE] px-4 py-2 text-sm font-medium text-[#5B3A22]"
+                className="flex-1 rounded-full border border-[#C9D6E4] px-4 py-2 text-sm font-medium text-[#26415F]"
               >
                 취소
               </button>
               <button
                 disabled={loading}
-                className="flex-1 rounded-full bg-[#3E2A1B] px-4 py-2 text-sm font-medium text-[#FFFCF6] disabled:opacity-50"
+                className="flex-1 rounded-full bg-[#26415F] px-4 py-2 text-sm font-medium text-[#FBFDFF] disabled:opacity-50"
               >
                 {loading ? "확인 중…" : "확인"}
               </button>

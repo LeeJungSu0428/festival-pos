@@ -89,12 +89,12 @@ export default function SitePos({
   return (
     <div className="relative min-h-screen pb-32">
       <BrandBackdrop />
-      <header className="flex items-center justify-between border-b border-[#E7D9C3] bg-[#FFFCF6] px-4 py-3 sm:px-6">
+      <header className="flex items-center justify-between border-b border-[#D7E2EE] bg-[#FBFDFF] px-4 py-3 sm:px-6">
         <div>
-          <p className="text-xs tracking-[0.2em] text-[#A47F55]">애국한양응원제 : 오름</p>
-          <h1 className="text-lg font-bold text-[#3E2A1B]">{title}</h1>
+          <p className="text-xs tracking-[0.2em] text-[#5B7FA6]">애국한양응원제 : 오름</p>
+          <h1 className="text-lg font-bold text-[#26415F]">{title}</h1>
         </div>
-        <Link href="/hub" className="text-sm text-[#8A6F52] hover:text-[#3E2A1B]">
+        <Link href="/hub" className="text-sm text-[#5B6B82] hover:text-[#26415F]">
           ← 허브로
         </Link>
       </header>
@@ -119,7 +119,7 @@ export default function SitePos({
         {products.map((p) => {
           const qty = cart[p.id] ?? 0;
           return (
-            <div key={p.id} className="rounded-xl border border-[#E7D9C3] bg-[#FFFCF6] p-4">
+            <div key={p.id} className="rounded-xl border border-[#D7E2EE] bg-[#FBFDFF] p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
                   {p.imageUrl && (
@@ -127,24 +127,24 @@ export default function SitePos({
                     <img src={p.imageUrl} alt={p.name} className="h-12 w-12 rounded-lg object-cover" />
                   )}
                   <div>
-                    <p className="font-semibold text-[#3E2A1B]">{p.name}</p>
-                    <p className="text-sm text-[#8A6F52]">₩{p.price.toLocaleString("ko-KR")}</p>
+                    <p className="font-semibold text-[#26415F]">{p.name}</p>
+                    <p className="text-sm text-[#5B6B82]">₩{p.price.toLocaleString("ko-KR")}</p>
                   </div>
                 </div>
-                <span className="text-xs text-[#B29E82]">재고 {p.currentStock}</span>
+                <span className="text-xs text-[#9AAEC4]">재고 {p.currentStock}</span>
               </div>
               <div className="mt-4 flex items-center justify-center gap-4">
                 <button
                   onClick={() => changeQty(p, -1)}
-                  className="h-10 w-10 rounded-full border border-[#D9C7AE] text-lg font-semibold text-[#5B3A22] active:bg-[#F1E3D0]"
+                  className="h-10 w-10 rounded-full border border-[#C9D6E4] text-lg font-semibold text-[#26415F] active:bg-[#E8EEF5]"
                 >
                   −
                 </button>
-                <span className="w-8 text-center text-lg font-semibold text-[#3E2A1B]">{qty}</span>
+                <span className="w-8 text-center text-lg font-semibold text-[#26415F]">{qty}</span>
                 <button
                   onClick={() => changeQty(p, 1)}
                   disabled={qty >= p.currentStock}
-                  className="h-10 w-10 rounded-full border border-[#D9C7AE] text-lg font-semibold text-[#5B3A22] active:bg-[#F1E3D0] disabled:opacity-30"
+                  className="h-10 w-10 rounded-full border border-[#C9D6E4] text-lg font-semibold text-[#26415F] active:bg-[#E8EEF5] disabled:opacity-30"
                 >
                   +
                 </button>
@@ -153,23 +153,23 @@ export default function SitePos({
           );
         })}
         {products.length === 0 && (
-          <p className="col-span-full text-sm text-[#B29E82]">
+          <p className="col-span-full text-sm text-[#9AAEC4]">
             이 사이트에 등록된 판매중 상품이 없습니다. 슈퍼관리자의 Inventory 또는 Products에서 담당
             사이트를 지정해 상품을 추가해주세요.
           </p>
         )}
       </main>
 
-      <div className="fixed bottom-0 left-0 right-0 border-t border-[#E7D9C3] bg-[#FFFCF6] p-4 sm:px-6">
+      <div className="fixed bottom-0 left-0 right-0 border-t border-[#D7E2EE] bg-[#FBFDFF] p-4 sm:px-6">
         <div className="mx-auto flex max-w-3xl items-center justify-between">
           <div>
-            <p className="text-xs text-[#8A6F52]">{lines.length}개 상품 선택됨</p>
-            <p className="text-xl font-bold text-[#3E2A1B]">₩{total.toLocaleString("ko-KR")}</p>
+            <p className="text-xs text-[#5B6B82]">{lines.length}개 상품 선택됨</p>
+            <p className="text-xl font-bold text-[#26415F]">₩{total.toLocaleString("ko-KR")}</p>
           </div>
           <button
             onClick={complete}
             disabled={lines.length === 0 || submitting}
-            className="rounded-lg bg-[#3E2A1B] px-8 py-3 text-base font-semibold text-[#FFFCF6] disabled:opacity-40"
+            className="rounded-lg bg-[#26415F] px-8 py-3 text-base font-semibold text-[#FBFDFF] disabled:opacity-40"
           >
             {submitting ? "처리 중…" : "판매 완료"}
           </button>

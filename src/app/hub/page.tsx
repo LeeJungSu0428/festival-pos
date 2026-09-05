@@ -17,15 +17,15 @@ export default async function HubPage() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo-oreum.png" alt="오름" className="h-16 w-auto sm:h-20" />
             <div>
-              <p className="text-xs font-medium tracking-[0.2em] text-[#A47F55]">
+              <p className="text-xs font-medium tracking-[0.2em] text-[#5B7FA6]">
                 애국한양응원제 : 오름
               </p>
-              <h1 className="mt-1 text-2xl font-bold text-[#3E2A1B] sm:text-3xl">사이트 선택</h1>
+              <h1 className="mt-1 text-2xl font-bold text-[#26415F] sm:text-3xl">사이트 선택</h1>
             </div>
           </div>
           <LogoutLink />
         </div>
-        <p className="mt-3 text-sm text-[#8A6F52]">
+        <p className="mt-3 text-sm text-[#5B6B82]">
           카드를 누르면 해당 페이지로 바로 이동합니다.
         </p>
 

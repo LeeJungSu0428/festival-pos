@@ -41,19 +41,19 @@ export default function LoginPage() {
         <div className="flex flex-col items-center text-center sm:items-start sm:text-left">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-oreum.png" alt="오름" className="h-40 w-auto sm:h-52" />
-          <p className="mt-2 text-sm tracking-[0.2em] text-[#A47F55]">애국한양응원제</p>
+          <p className="mt-2 text-sm tracking-[0.2em] text-[#5B7FA6]">애국한양응원제</p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="w-full rounded-2xl border border-[#E7D9C3] bg-[#FFFCF6]/95 p-8 shadow-sm backdrop-blur-sm"
+          className="w-full rounded-2xl border border-[#D7E2EE] bg-[#FBFDFF]/95 p-8 shadow-sm backdrop-blur-sm"
         >
-          <h1 className="text-2xl font-bold text-[#3E2A1B]">관리자 로그인</h1>
-          <p className="mt-2 text-sm text-[#8A6F52]">
+          <h1 className="text-2xl font-bold text-[#26415F]">관리자 로그인</h1>
+          <p className="mt-2 text-sm text-[#5B6B82]">
             비밀번호를 입력하면 권한에 맞는 화면으로 이동합니다.
           </p>
 
-          <label className="mt-6 block text-sm font-medium text-[#5B3A22]">비밀번호</label>
+          <label className="mt-6 block text-sm font-medium text-[#26415F]">비밀번호</label>
           <div className="relative mt-2">
             <input
               type={showPassword ? "text" : "password"}
@@ -61,12 +61,12 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="전달받은 비밀번호"
-              className="w-full rounded-lg border border-[#E3D3BA] bg-white px-4 py-3 pr-12 text-[#3E2A1B] placeholder-[#B29E82] outline-none focus:border-[#B4632B]"
+              className="w-full rounded-lg border border-[#C9D6E4] bg-white px-4 py-3 pr-12 text-[#26415F] placeholder-[#9AAEC4] outline-none focus:border-[#3B5B82]"
             />
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-[#8A6F52]"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-[#5B6B82]"
             >
               {showPassword ? "숨기기" : "보기"}
             </button>
@@ -76,7 +76,7 @@ export default function LoginPage() {
 
           <button
             disabled={loading}
-            className="mt-6 w-full rounded-lg bg-[#3E2A1B] px-4 py-3 font-semibold text-[#FFFCF6] disabled:opacity-50"
+            className="mt-6 w-full rounded-lg bg-[#26415F] px-4 py-3 font-semibold text-[#FBFDFF] disabled:opacity-50"
           >
             {loading ? "확인 중…" : "로그인"}
           </button>

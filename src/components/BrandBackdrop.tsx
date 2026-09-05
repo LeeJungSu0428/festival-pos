@@ -5,9 +5,15 @@ export default function BrandBackdrop() {
       <img
         src="/brand/key-visual.jpg"
         alt=""
-        className="h-full w-full object-cover opacity-[0.09]"
+        className="h-full w-full object-cover opacity-[0.22]"
       />
-      <div className="absolute inset-0 bg-white/60" />
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.88) 55%, rgba(255,255,255,0.97) 100%)",
+        }}
+      />
     </div>
   );
 }
