@@ -33,10 +33,21 @@ export type Order = {
   cancelledAt?: string;
 };
 
+export type GoodsViewerSize = {
+  label: string;
+  available: boolean;
+};
+
+export type GoodsViewerState = {
+  imageUrl: string | null;
+  sizes: GoodsViewerSize[];
+};
+
 export type Store = {
   products: Product[];
   orders: Order[];
   nextOrderNumber: number;
+  goodsViewer: GoodsViewerState;
 };
 
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -80,7 +91,20 @@ const DEFAULT_STORE: Store = {
   ],
   orders: [],
   nextOrderNumber: 1001,
+  goodsViewer: {
+    imageUrl: null,
+    sizes: ["S", "M", "L", "XL", "2XL", "3XL"].map((label) => ({ label, available: true })),
+  },
 };
+
+// 기존에 저장된 데이터(goodsViewer 필드가 없던 버전)를 읽어도 에러 없이 동작하도록
+// 누락된 필드가 있으면 기본값을 채워준다.
+function normalizeStore(store: Store): Store {
+  if (!store.goodsViewer) {
+    store.goodsViewer = JSON.parse(JSON.stringify(DEFAULT_STORE.goodsViewer));
+  }
+  return store;
+}
 
 // ── Redis(Upstash) 연동: Vercel Marketplace에서 Redis 통합을 추가하면
 // KV_REST_API_URL / KV_REST_API_TOKEN (또는 UPSTASH_REDIS_REST_URL / _TOKEN)이
@@ -95,7 +119,7 @@ const REDIS_LOCK_KEY = "festival-pos:lock";
 
 async function readStoreFromRedis(): Promise<Store> {
   const existing = await redis!.get<Store>(REDIS_STORE_KEY);
-  if (existing) return existing;
+  if (existing) return normalizeStore(existing);
   await redis!.set(REDIS_STORE_KEY, DEFAULT_STORE);
   return JSON.parse(JSON.stringify(DEFAULT_STORE));
 }
@@ -137,7 +161,7 @@ async function ensureFile(): Promise<void> {
 async function readStoreFromDisk(): Promise<Store> {
   await ensureFile();
   const raw = await fs.readFile(DATA_FILE, "utf-8");
-  return JSON.parse(raw) as Store;
+  return normalizeStore(JSON.parse(raw) as Store);
 }
 
 async function writeStoreToDisk(store: Store): Promise<void> {

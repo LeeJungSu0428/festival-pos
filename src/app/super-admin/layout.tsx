@@ -19,8 +19,8 @@ export default async function SuperAdminLayout({ children }: { children: ReactNo
         </div>
         <NavLinks />
         <div className="mt-auto space-y-2 border-t border-neutral-200 pt-4">
-          <Link href="/pos" className="block text-sm text-neutral-500 hover:text-neutral-800">
-            → 판매 화면으로
+          <Link href="/hub" className="block text-sm text-neutral-500 hover:text-neutral-800">
+            → 허브로 돌아가기
           </Link>
           <LogoutButton />
         </div>

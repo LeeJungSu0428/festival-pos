@@ -27,7 +27,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.push(data.role === "super" ? "/super-admin" : "/pos");
+    router.push("/hub");
     router.refresh();
   }
 

@@ -29,6 +29,13 @@ export async function middleware(req: NextRequest) {
   if (pathname.startsWith("/pos")) {
     if (role !== "admin" && role !== "super") return deny(401, "로그인이 필요합니다.");
   }
+  if (
+    pathname.startsWith("/hub") ||
+    pathname.startsWith("/sites") ||
+    pathname.startsWith("/goods-viewer")
+  ) {
+    if (role !== "admin" && role !== "super") return deny(401, "로그인이 필요합니다.");
+  }
 
   // ---- API: 상품 ----
   if (pathname.startsWith("/api/products")) {
@@ -54,6 +61,11 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  // ---- API: 굿즈 뷰어 ----
+  if (pathname.startsWith("/api/goods-viewer")) {
+    if (role !== "admin" && role !== "super") return deny(401, "로그인이 필요합니다.");
+  }
+
   // ---- API: 통계/대시보드 ----
   if (pathname.startsWith("/api/stats")) {
     if (role !== "super") return deny(403, "슈퍼관리자만 가능합니다.");
@@ -66,8 +78,12 @@ export const config = {
   matcher: [
     "/super-admin/:path*",
     "/pos/:path*",
+    "/hub/:path*",
+    "/sites/:path*",
+    "/goods-viewer/:path*",
     "/api/products/:path*",
     "/api/orders/:path*",
     "/api/stats/:path*",
+    "/api/goods-viewer/:path*",
   ],
 };
