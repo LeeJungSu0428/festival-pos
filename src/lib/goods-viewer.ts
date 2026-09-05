@@ -2,11 +2,11 @@ import { withStore, readOnly, type ProductCategory, type GoodsOrderLine } from "
 
 export class GoodsViewerError extends Error {}
 
-/** 굿즈 뷰어에 보여줄 상품 목록(판매중인 것 전부, 담당 사이트 상관없이 전체) + 계좌 정보. */
-export async function getGoodsViewerForCategory(_category: ProductCategory) {
+/** 굿즈 뷰어에 보여줄 상품 목록(이 사이트가 실제로 갖고 있는 재고만) + 계좌 정보. */
+export async function getGoodsViewerForCategory(category: ProductCategory) {
   return readOnly((s) => ({
     bankInfo: s.goodsViewer.bankInfo,
-    products: s.products.filter((p) => p.active),
+    products: s.products.filter((p) => p.category === category && p.active),
   }));
 }
 
@@ -37,6 +37,7 @@ export async function submitGoodsOrder(category: ProductCategory, items: SubmitG
       }
       const product = store.products.find((p) => p.id === raw.productId);
       if (!product) throw new GoodsViewerError("존재하지 않는 상품입니다.");
+      if (product.category !== category) throw new GoodsViewerError("잘못된 상품입니다.");
       if (!product.active) throw new GoodsViewerError(`'${product.name}'은(는) 현재 판매 중이 아닙니다.`);
 
       if (product.hasSizes) {
