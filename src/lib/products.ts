@@ -1,4 +1,4 @@
-import { withStore, readOnly, type Product } from "./store";
+import { withStore, readOnly, type Product, type ProductCategory } from "./store";
 
 export class ProductError extends Error {}
 
@@ -6,12 +6,19 @@ function genId(): string {
   return "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
 
+const VALID_CATEGORIES: ProductCategory[] = ["new-materials", "international-hall"];
+
 export async function listProducts(): Promise<Product[]> {
   return readOnly((s) => s.products);
 }
 
+export async function listProductsByCategory(category: ProductCategory): Promise<Product[]> {
+  return readOnly((s) => s.products.filter((p) => p.category === category));
+}
+
 export type CreateProductInput = {
   name: string;
+  category: ProductCategory;
   price: number;
   cost: number;
   initialStock: number;
@@ -24,8 +31,10 @@ export async function createProduct(input: CreateProductInput): Promise<Product>
   const price = Number(input.price);
   const cost = Number(input.cost);
   const initialStock = Number(input.initialStock);
+  const category = input.category;
 
   if (!name) throw new ProductError("상품명을 입력해주세요.");
+  if (!VALID_CATEGORIES.includes(category)) throw new ProductError("담당 사이트를 선택해주세요.");
   if (!Number.isFinite(price) || price < 0) throw new ProductError("판매가는 0 이상의 숫자여야 합니다.");
   if (!Number.isFinite(cost) || cost < 0) throw new ProductError("원가는 0 이상의 숫자여야 합니다.");
   if (!Number.isFinite(initialStock) || initialStock < 0) {
@@ -36,6 +45,7 @@ export async function createProduct(input: CreateProductInput): Promise<Product>
     const product: Product = {
       id: genId(),
       name,
+      category,
       price,
       cost,
       initialStock,
@@ -62,6 +72,10 @@ export async function updateProduct(id: string, patch: UpdateProductInput): Prom
       const name = String(patch.name).trim();
       if (!name) throw new ProductError("상품명을 입력해주세요.");
       product.name = name;
+    }
+    if (patch.category !== undefined) {
+      if (!VALID_CATEGORIES.includes(patch.category)) throw new ProductError("담당 사이트를 선택해주세요.");
+      product.category = patch.category;
     }
     if (patch.price !== undefined) {
       const price = Number(patch.price);

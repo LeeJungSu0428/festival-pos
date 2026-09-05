@@ -2,9 +2,12 @@
 
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 
+type Category = "new-materials" | "international-hall";
+
 type Product = {
   id: string;
   name: string;
+  category: Category;
   price: number;
   cost: number;
   initialStock: number;
@@ -14,8 +17,14 @@ type Product = {
   active: boolean;
 };
 
+const CATEGORY_LABEL: Record<Category, string> = {
+  "new-materials": "신소재",
+  "international-hall": "국제관",
+};
+
 const emptyForm = {
   name: "",
+  category: "new-materials" as Category,
   price: "",
   cost: "",
   initialStock: "",
@@ -49,6 +58,7 @@ export default function ProductsPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name: form.name,
+        category: form.category,
         price: Number(form.price),
         cost: Number(form.cost),
         initialStock: Number(form.initialStock),
@@ -102,6 +112,16 @@ export default function ProductsPage() {
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
           />
+        </Field>
+        <Field label="담당 사이트">
+          <select
+            className="input"
+            value={form.category}
+            onChange={(e) => setForm((f) => ({ ...f, category: e.target.value as Category }))}
+          >
+            <option value="new-materials">신소재</option>
+            <option value="international-hall">국제관</option>
+          </select>
         </Field>
         <Field label="판매가">
           <input
@@ -164,7 +184,8 @@ export default function ProductsPage() {
               <div>
                 <p className="font-semibold text-neutral-900">{p.name}</p>
                 <p className="text-sm text-neutral-500">
-                  ₩{p.price.toLocaleString("ko-KR")} · 원가 ₩{p.cost.toLocaleString("ko-KR")}
+                  {CATEGORY_LABEL[p.category]} · ₩{p.price.toLocaleString("ko-KR")} · 원가 ₩
+                  {p.cost.toLocaleString("ko-KR")}
                 </p>
               </div>
               <span

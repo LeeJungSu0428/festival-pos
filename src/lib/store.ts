@@ -2,9 +2,12 @@ import fs from "fs/promises";
 import path from "path";
 import { Redis } from "@upstash/redis";
 
+export type ProductCategory = "new-materials" | "international-hall";
+
 export type Product = {
   id: string;
   name: string;
+  category: ProductCategory;
   price: number;
   cost: number;
   initialStock: number;
@@ -33,14 +36,43 @@ export type Order = {
   cancelledAt?: string;
 };
 
-export type GoodsViewerSize = {
+export type GoodsSize = {
   label: string;
   available: boolean;
 };
 
-export type GoodsViewerState = {
+export type GoodsItem = {
+  id: string;
+  name: string;
+  price: number;
   imageUrl: string | null;
-  sizes: GoodsViewerSize[];
+  hasSizes: boolean;
+  sizes: GoodsSize[]; // hasSizes가 false면 빈 배열
+  active: boolean;
+};
+
+// 굿즈 뷰어에서 손님이 "확인"까지 누른 주문 기록.
+// 재고에는 절대 영향을 주지 않고, 신소재/국제관 관리자가 참고해서
+// 각자 사이트에서 수동으로 실제 판매를 입력할 때 참고하는 용도.
+export type GoodsOrderLine = {
+  goodsItemId: string;
+  name: string;
+  size: string | null; // hasSizes가 false면 null
+  qty: number;
+  price: number;
+};
+
+export type GoodsOrder = {
+  id: string;
+  createdAt: string;
+  lines: GoodsOrderLine[];
+  total: number;
+};
+
+export type GoodsViewerState = {
+  items: GoodsItem[];
+  bankInfo: string;
+  orders: GoodsOrder[];
 };
 
 export type Store = {
@@ -53,11 +85,16 @@ export type Store = {
 const DATA_DIR = path.join(process.cwd(), "data");
 const DATA_FILE = path.join(DATA_DIR, "store.json");
 
+function sizeSet(): GoodsSize[] {
+  return ["S", "M", "L", "XL", "2XL", "3XL"].map((label) => ({ label, available: true }));
+}
+
 const DEFAULT_STORE: Store = {
   products: [
     {
       id: "p1",
       name: "야구 유니폼",
+      category: "new-materials",
       price: 38000,
       cost: 25000,
       initialStock: 100,
@@ -69,6 +106,7 @@ const DEFAULT_STORE: Store = {
     {
       id: "p2",
       name: "축구 유니폼",
+      category: "international-hall",
       price: 36000,
       cost: 23000,
       initialStock: 100,
@@ -80,6 +118,7 @@ const DEFAULT_STORE: Store = {
     {
       id: "p3",
       name: "키캡",
+      category: "new-materials",
       price: 7000,
       cost: 4000,
       initialStock: 100,
@@ -92,16 +131,101 @@ const DEFAULT_STORE: Store = {
   orders: [],
   nextOrderNumber: 1001,
   goodsViewer: {
-    imageUrl: null,
-    sizes: ["S", "M", "L", "XL", "2XL", "3XL"].map((label) => ({ label, available: true })),
+    bankInfo: "신한 110-494-381011",
+    orders: [],
+    items: [
+      {
+        id: "g1",
+        name: "야구 유니폼",
+        price: 38000,
+        imageUrl: "/goods/baseball-uniform.png",
+        hasSizes: true,
+        sizes: sizeSet(),
+        active: true,
+      },
+      {
+        id: "g2",
+        name: "축구 유니폼",
+        price: 36000,
+        imageUrl: "/goods/soccer-uniform.png",
+        hasSizes: true,
+        sizes: sizeSet(),
+        active: true,
+      },
+      {
+        id: "g3",
+        name: "티셔츠 1번",
+        price: 0,
+        imageUrl: "/goods/tshirt-1.png",
+        hasSizes: true,
+        sizes: sizeSet(),
+        active: true,
+      },
+      {
+        id: "g4",
+        name: "티셔츠 2번",
+        price: 0,
+        imageUrl: "/goods/tshirt-2.png",
+        hasSizes: true,
+        sizes: sizeSet(),
+        active: true,
+      },
+      {
+        id: "g5",
+        name: "티셔츠 3번",
+        price: 0,
+        imageUrl: "/goods/tshirt-3.png",
+        hasSizes: true,
+        sizes: sizeSet(),
+        active: true,
+      },
+      {
+        id: "g6",
+        name: "키캡",
+        price: 0,
+        imageUrl: "/goods/keycap.png",
+        hasSizes: false,
+        sizes: [],
+        active: true,
+      },
+      {
+        id: "g7",
+        name: "타투 스티커",
+        price: 0,
+        imageUrl: "/goods/tattoo-sticker.png",
+        hasSizes: false,
+        sizes: [],
+        active: true,
+      },
+      {
+        id: "g8",
+        name: "슬로건 카드",
+        price: 0,
+        imageUrl: "/goods/slogan-card.png",
+        hasSizes: false,
+        sizes: [],
+        active: true,
+      },
+    ],
   },
 };
 
-// 기존에 저장된 데이터(goodsViewer 필드가 없던 버전)를 읽어도 에러 없이 동작하도록
+// 기존에 저장된 데이터(새 필드가 없던 버전)를 읽어도 에러 없이 동작하도록
 // 누락된 필드가 있으면 기본값을 채워준다.
 function normalizeStore(store: Store): Store {
   if (!store.goodsViewer) {
     store.goodsViewer = JSON.parse(JSON.stringify(DEFAULT_STORE.goodsViewer));
+  }
+  if (!Array.isArray(store.goodsViewer.orders)) {
+    store.goodsViewer.orders = [];
+  }
+  if (!store.goodsViewer.bankInfo) {
+    store.goodsViewer.bankInfo = DEFAULT_STORE.goodsViewer.bankInfo;
+  }
+  for (const product of store.products) {
+    if (!product.category) {
+      product.category = "new-materials";
+    }
   }
   return store;
 }

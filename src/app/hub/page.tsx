@@ -2,13 +2,15 @@ import { redirect } from "next/navigation";
 import { getRoleFromCookies } from "@/lib/session";
 import HubGrid from "./hub-grid";
 import LogoutLink from "./logout-link";
+import BrandBackdrop from "@/components/BrandBackdrop";
 
 export default async function HubPage() {
   const role = await getRoleFromCookies();
   if (role !== "admin" && role !== "super") redirect("/login");
 
   return (
-    <div className="min-h-screen bg-[#F6EEE1] px-4 py-10 sm:px-8">
+    <div className="relative min-h-screen px-4 py-10 sm:px-8">
+      <BrandBackdrop />
       <div className="mx-auto max-w-4xl">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-4">

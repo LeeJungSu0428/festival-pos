@@ -16,6 +16,7 @@ export async function GET(req: NextRequest) {
   const filtered = products.map((p) => ({
     id: p.id,
     name: p.name,
+    category: p.category,
     price: p.price,
     currentStock: p.currentStock,
     active: p.active,
